@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "codelens"
+version = "0.1.0"
+description = "Offline static analysis: architecture, flows, integrations and dependency graphs from source code"
+requires-python = ">=3.11"
+dependencies = [
+    "tree-sitter>=0.23,<0.24",
+    "tree-sitter-java>=0.23,<0.24",
+    "networkx>=3.2",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+mcp = ["mcp>=2.3,<3"]
+
+[project.scripts]
+codelens = "codelens.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"codelens.frontends" = ["queries/*/*.scm"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

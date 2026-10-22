@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: mobile-banking-api
+finacle:
+  url: https://finacle-uat.bank.internal/FIWebService/balance
+  username: mbapi
+  password: s3cr3t-do-not-print
+services:
+  card-adapter:
+    url: http://card-adapter.bank.internal:8080
+uidai:
+  auth:
+    url: https://auth.uidai.example/2.5
+    license-key: MBL-LK-123456

@@ -1,0 +1,48 @@
+# codelens system catalog for the banking POC.
+# Hosts, property keys and markers here are SAMPLE values: replace them with your bank's.
+# A call is labelled with the first system whose hosts, properties or markers match.
+# "middleware" systems (ESB, gateways) are reported as the hop, not the destination.
+
+[layers]
+web = ["*.web.*", "*.controller.*", "*.api.*"]
+domain = ["*.domain.*", "*.service.*", "*.core.*"]
+infrastructure = ["*.infra.*", "*.client.*", "*.adapter.*", "*.integration.*"]
+
+[[system]]
+name = "Finacle (CBS)"
+category = "internal-core"
+hosts = ["finacle*", "*.finacle.*"]
+properties = ["finacle.*", "cbs.*"]
+markers = ["FIN_", "FIWebService"]
+
+[[system]]
+name = "DCMS"
+category = "internal-core"
+hosts = ["dcms*"]
+properties = ["dcms.*"]
+
+[[system]]
+name = "ESB"
+category = "middleware"
+hosts = ["esb.*", "esb"]
+properties = ["esb.*"]
+
+[[system]]
+name = "FSS"
+category = "third-party"
+hosts = ["*.fss.*"]
+properties = ["fss.*"]
+
+[[system]]
+name = "NPCI (UPI)"
+category = "third-party"
+hosts = ["*.npci.*"]
+properties = ["npci.*", "upi.*"]
+markers = ["npci.org/upi", "ReqPay", "RespPay"]
+
+[[system]]
+name = "UIDAI (Aadhaar)"
+category = "third-party"
+hosts = ["*.uidai.*"]
+properties = ["uidai.*", "aadhaar.*"]
+markers = ["uidai.gov.in"]

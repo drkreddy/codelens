@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: payments-service
+esb:
+  url: http://esb.bank.internal/gateway
+  client-secret: "esb-secret-xyz"
+npci:
+  upi:
+    url: https://upi-gw.npci.example/upi

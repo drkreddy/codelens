@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "codelens": {
+      "type": "stdio",
+      "command": "/Users/ravindra/repeat/codelens/.venv/bin/codelens",
+      "args": [
+        "mcp",
+        "/Users/ravindra/repeat/codelens/examples/bank-poc"
+      ],
+      "env": {}
+    }
+  }
+}
