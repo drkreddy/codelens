@@ -120,15 +120,19 @@ def path_regex(path: str) -> re.Pattern:
 
 
 class Workspace:
-    def __init__(self, root: Path, catalog: Catalog):
+    def __init__(self, root: Path, catalog: Catalog, repos: dict[str, Repo] | None = None):
+        """Analyse every repo under root, or reuse already-parsed `repos` (see store.py)."""
         self.root = root
         self.catalog = catalog
         self.repos: dict[str, Repo] = {}
-        for path in find_repos(root):
-            config = load_repo_config(path)
-            graph = analyze(path)
-            service = config.get("spring.application.name", path.name)
-            self.repos[path.name] = Repo(path.name, path, service, graph, config)
+        if repos is not None:
+            self.repos = repos
+        else:
+            for path in find_repos(root):
+                config = load_repo_config(path)
+                graph = analyze(path)
+                service = config.get("spring.application.name", path.name)
+                self.repos[path.name] = Repo(path.name, path, service, graph, config)
         self.by_service = {r.service: r for r in self.repos.values()}
         for repo in self.repos.values():
             self._resolve_outbound(repo)

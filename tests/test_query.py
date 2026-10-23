@@ -83,6 +83,7 @@ def test_mcp_server_over_stdio():
 
     tools, result = anyio.run(run)
     assert tools == {"overview", "find_journeys", "impact", "callers", "callees",
-                     "domain_dependencies", "outbound_calls", "source", "search_code"}
+                     "domain_dependencies", "outbound_calls", "source", "search_code",
+                     "graph_schema", "graph_query"}
     assert not result.is_error
     assert "POST /upi/pay" in str(result.structured_content or result.content)

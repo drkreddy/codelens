@@ -1,0 +1,46 @@
+openapi: 3.1.0
+info:
+  title: UIDAI (Aadhaar)
+  version: 0.0.0
+  description: >-
+    Category: third-party. This spec describes the calls the bank makes to this system,
+    reconstructed by static analysis. It is not a spec published by the system owner.
+servers:
+  - url: https://auth.uidai.example
+paths:
+  /2.5/auth:
+    post:
+      operationId: postTwoPointFiveAuth
+      summary: UidaiAuthClient.authenticate
+      description: >-
+        Client WebClient. The code builds the URL as the property uidai.auth.url plus /auth, so the /2.5
+        segment is presumably in the configured value and is not visible in the class.
+        Content type is not set in code and is inferred from the XML payload.
+        Success is derived from the response text containing ret="y".
+      requestBody:
+        content:
+          application/xml:
+            schema:
+              type: string
+              description: >-
+                XML built by string concatenation. Root element Auth with attribute uid (the aadhaarRef
+                argument, string).
+              xml:
+                name: Auth
+                namespace: http://www.uidai.gov.in/authentication/uid-auth-request/2.0
+      responses:
+        default:
+          description: Body read as a raw String. No status handling beyond the WebClient default.
+          content:
+            application/xml:
+              schema:
+                type: string
+      x-codelens:
+        repo: mobile-banking-api
+        at: mobile-banking-api/src/main/java/com/bank/mobile/infra/UidaiAuthClient.java:19
+        confidence: likely
+        via: null
+        callers:
+          - repo: mobile-banking-api
+            method: UidaiAuthClient.authenticate
+            at: mobile-banking-api/src/main/java/com/bank/mobile/infra/UidaiAuthClient.java:19

@@ -1,0 +1,70 @@
+openapi: 3.1.0
+info:
+  title: Finacle (CBS)
+  version: 0.0.0
+  description: >-
+    Category: internal-core. This spec describes the calls the bank makes to this system,
+    reconstructed by static analysis. It is not a spec published by the system owner.
+    The SOAP call from FinacleGateway.getBalance has no verb or path in code and is listed in unsupported.md.
+servers:
+  - url: http://esb.bank.internal
+    description: Host seen in the calls. Calls reach Finacle through the ESB (middleware).
+paths:
+  /gateway/FIN_DEBIT_TXN:
+    post:
+      operationId: postGatewayFinDebitTxn
+      summary: EsbCoreBankingAdapter.debit
+      description: >-
+        Client RestTemplate, through the ESB. The transaction code FIN_DEBIT_TXN is the path suffix on
+        the property esb.url. Content type is not set explicitly. The response is read as a String and discarded.
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              description: 'Plain string body built as "<account>:<amountPaise>" (account string, amountPaise long, in paise)'
+      responses:
+        default:
+          description: Response read as String and discarded. No status handling is visible.
+          content:
+            '*/*':
+              schema:
+                type: string
+      x-codelens:
+        repo: payments-service
+        at: payments-service/src/main/java/com/bank/payments/infra/EsbCoreBankingAdapter.java:21
+        confidence: certain
+        via: ESB
+        callers:
+          - repo: payments-service
+            method: EsbCoreBankingAdapter.debit
+            at: payments-service/src/main/java/com/bank/payments/infra/EsbCoreBankingAdapter.java:21
+  /gateway/FIN_CREDIT_TXN:
+    post:
+      operationId: postGatewayFinCreditTxn
+      summary: EsbCoreBankingAdapter.credit
+      description: >-
+        Client RestTemplate, through the ESB. The transaction code FIN_CREDIT_TXN is the path suffix on
+        the property esb.url. Content type is not set explicitly. The response is read as a String and discarded.
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              description: 'Plain string body built as "<account>:<amountPaise>" (account string, amountPaise long, in paise)'
+      responses:
+        default:
+          description: Response read as String and discarded. No status handling is visible.
+          content:
+            '*/*':
+              schema:
+                type: string
+      x-codelens:
+        repo: payments-service
+        at: payments-service/src/main/java/com/bank/payments/infra/EsbCoreBankingAdapter.java:26
+        confidence: certain
+        via: ESB
+        callers:
+          - repo: payments-service
+            method: EsbCoreBankingAdapter.credit
+            at: payments-service/src/main/java/com/bank/payments/infra/EsbCoreBankingAdapter.java:26

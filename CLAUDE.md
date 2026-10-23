@@ -10,7 +10,9 @@ pip install -e ".[dev]"
 pytest -q
 codelens analyze <repo> -o out/ [-f json,md,dot] [-l java,py]
 codelens journeys <folder-of-repos> [-s systems.toml] -o out/   # API journeys report
-codelens mcp <folder-of-repos> [-s systems.toml]                 # Q&A tools over MCP (stdio)
+codelens mcp <folder-of-repos> [-s systems.toml] [--db P] [--reindex]   # Q&A tools over MCP (stdio)
+codelens index <folder-of-repos> [--db P]                        # parse and save the graph store
+codelens query <db> "<cypher>"                                   # read-only Cypher on the store
 ```
 
 The current goal is a banking POC: map which **internal core systems** (CBS/Finacle,
@@ -95,11 +97,26 @@ discovery.py  -> frontends/<lang>  -> linker.py      -> graph.py   -> reporters/
 
 - `QueryEngine` holds all the logic and returns plain dicts with `at` (repo/path:line) and
   confidence. `mcp_server.py` only wraps it as read-only tools: overview, find_journeys,
-  impact, callers, callees, domain_dependencies, outbound_calls, source, search_code.
+  impact, callers, callees, domain_dependencies, outbound_calls, source, search_code, plus
+  `graph_schema` and `graph_query` (read-only Cypher on the Kuzu store, row-capped at 1000, 10 s timeout).
 - `.mcp.json` registers the server for this project against `examples/bank-poc`.
 - `source` and `search_code` mask secret-looking assignments (`query.mask_line`). Tool output
   goes to whichever model is connected, so for real bank code only connect an approved model.
 - Never print to stdout in code reachable from `codelens mcp`: stdout carries the protocol.
+
+## Graph store (`store.py`)
+
+- Parsed repos are saved in an embedded Kuzu database (`<root>/.codelens/graph.kuzu`, git-ignored;
+  `kuzu==0.11.3`, optional extra `store`, included in `dev`). `codelens mcp` loads it when the
+  fingerprint (sha256 of sources, config files, codelens version) still matches, otherwise it
+  re-parses and saves. A store that cannot be written only logs a warning to stderr.
+- The in-memory `CodeGraph` is still what `query.py` and `journeys.py` use. The store is a copy of it
+  plus derived `Outbound` nodes for Cypher. Tables: `Repo`, `Symbol`, `Edge` (rel), `Outbound`,
+  `HAS_OUTBOUND` (rel), `Meta`. Outbound calls are not loaded back; they are recomputed from method
+  attrs and config on load, so `systems.toml` edits apply without re-parsing.
+- `codelens query` opens the database read-only, so Cypher writes fail. Never use Kuzu extensions
+  (they download from the network); JSON lives in STRING columns. Config in the store is the masked one.
+- Not done: per-file incremental updates (any change re-parses the whole workspace).
 
 ## Python frontend (`frontends/python_ast.py`)
 
@@ -118,4 +135,4 @@ A leading `src/` path component is stripped from module names.
 5. Config-aware integrations: `application.yml`/`.properties` URLs, Feign `url`,
    string-literal hosts, SQL table names in `@Query`/JDBC strings
 6. More languages (TypeScript, Go): a frontend plus `.scm` files each
-7. Incremental cache keyed by file hash; interactive HTML graph viewer
+7. Per-file incremental updates of the graph store; interactive HTML graph viewer

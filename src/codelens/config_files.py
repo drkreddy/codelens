@@ -74,12 +74,8 @@ def parse_properties(text: str) -> dict[str, str]:
     return out
 
 
-def load_repo_config(repo: Path) -> dict[str, str]:
-    """Merge every application*/bootstrap* config file in a repo.
-
-    Base files load before profile files (application-uat.yml), so profile
-    values win, roughly like Spring with every profile active.
-    """
+def config_paths(repo: Path) -> list[Path]:
+    """Every application*/bootstrap* config file in a repo, base files before profile files."""
     files = []
     for path in repo.rglob("*"):
         if any(part in DEFAULT_IGNORED_DIRS for part in path.relative_to(repo).parts):
@@ -87,8 +83,17 @@ def load_repo_config(repo: Path) -> dict[str, str]:
         if path.is_file() and not path.is_symlink() and CONFIG_NAMES.match(path.name):
             files.append(path)
     files.sort(key=lambda p: ("-" in p.stem, str(p)))
+    return files
+
+
+def load_repo_config(repo: Path) -> dict[str, str]:
+    """Merge every application*/bootstrap* config file in a repo.
+
+    Base files load before profile files (application-uat.yml), so profile
+    values win, roughly like Spring with every profile active.
+    """
     config: dict[str, str] = {}
-    for path in files:
+    for path in config_paths(repo):
         text = path.read_text(encoding="utf-8", errors="replace")
         config.update(parse_properties(text) if path.suffix == ".properties" else parse_yaml(text))
     return config

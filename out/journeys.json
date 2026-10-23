@@ -1,0 +1,695 @@
+{
+  "repos": [
+    {
+      "name": "card-adapter",
+      "service": "card-adapter",
+      "files": 4
+    },
+    {
+      "name": "mobile-banking-api",
+      "service": "mobile-banking-api",
+      "files": 11
+    },
+    {
+      "name": "payments-service",
+      "service": "payments-service",
+      "files": 5
+    }
+  ],
+  "journeys": [
+    {
+      "entry_repo": "card-adapter",
+      "entry": "endpoint:POST /api/cards/{cardId}/block",
+      "hops": [
+        {
+          "repo": "card-adapter",
+          "symbol": "java:com.bank.cards.web.CardBlockController#block",
+          "name": "CardBlockController.block",
+          "layer": "web",
+          "dispatch": false,
+          "outbound": null
+        },
+        {
+          "repo": "card-adapter",
+          "symbol": "java:com.bank.cards.domain.CardBlockService#block",
+          "name": "CardBlockService.block",
+          "layer": "domain",
+          "dispatch": false,
+          "outbound": null
+        },
+        {
+          "repo": "card-adapter",
+          "symbol": "java:com.bank.cards.infra.DcmsClient#blockCard",
+          "name": "DcmsClient.blockCard",
+          "layer": "infrastructure",
+          "dispatch": false,
+          "outbound": null
+        }
+      ],
+      "outbound": {
+        "repo": "card-adapter",
+        "method": "java:com.bank.cards.infra.DcmsClient#blockCard",
+        "protocol": "ISO 8583",
+        "client": "jPOS",
+        "operation": "MTI 0302",
+        "url": "tcp://dcms-switch.bank.internal:7002",
+        "host": "dcms-switch.bank.internal",
+        "system": "DCMS",
+        "category": "internal-core",
+        "via": null,
+        "reason": "host",
+        "line": 27,
+        "confidence": "certain",
+        "target_repo": null,
+        "target_endpoint": null
+      },
+      "confidence": "likely"
+    },
+    {
+      "entry_repo": "card-adapter",
+      "entry": "endpoint:POST /api/cards/{cardId}/block",
+      "hops": [
+        {
+          "repo": "card-adapter",
+          "symbol": "java:com.bank.cards.web.CardBlockController#block",
+          "name": "CardBlockController.block",
+          "layer": "web",
+          "dispatch": false,
+          "outbound": null
+        },
+        {
+          "repo": "card-adapter",
+          "symbol": "java:com.bank.cards.domain.CardBlockService#block",
+          "name": "CardBlockService.block",
+          "layer": "domain",
+          "dispatch": false,
+          "outbound": null
+        },
+        {
+          "repo": "card-adapter",
+          "symbol": "java:com.bank.cards.infra.FssHotlistClient#hotlist",
+          "name": "FssHotlistClient.hotlist",
+          "layer": "infrastructure",
+          "dispatch": false,
+          "outbound": null
+        }
+      ],
+      "outbound": {
+        "repo": "card-adapter",
+        "method": "java:com.bank.cards.infra.FssHotlistClient#hotlist",
+        "protocol": "HTTP",
+        "client": "RestTemplate",
+        "operation": "POST /api/v1/hotlist",
+        "url": "https://hotlist.fss.example/api/v1/hotlist",
+        "host": "hotlist.fss.example",
+        "system": "FSS",
+        "category": "third-party",
+        "via": null,
+        "reason": "host",
+        "line": 15,
+        "confidence": "certain",
+        "target_repo": null,
+        "target_endpoint": null
+      },
+      "confidence": "likely"
+    },
+    {
+      "entry_repo": "mobile-banking-api",
+      "entry": "endpoint:GET /accounts/{id}/balance",
+      "hops": [
+        {
+          "repo": "mobile-banking-api",
+          "symbol": "java:com.bank.mobile.web.AccountController#balance",
+          "name": "AccountController.balance",
+          "layer": "web",
+          "dispatch": false,
+          "outbound": null
+        },
+        {
+          "repo": "mobile-banking-api",
+          "symbol": "java:com.bank.mobile.domain.AccountService#balance",
+          "name": "AccountService.balance",
+          "layer": "domain",
+          "dispatch": false,
+          "outbound": null
+        },
+        {
+          "repo": "mobile-banking-api",
+          "symbol": "java:com.bank.mobile.domain.CoreBankingGateway#getBalance",
+          "name": "CoreBankingGateway.getBalance",
+          "layer": "domain",
+          "dispatch": false,
+          "outbound": null
+        },
+        {
+          "repo": "mobile-banking-api",
+          "symbol": "java:com.bank.mobile.infra.FinacleGateway#getBalance",
+          "name": "FinacleGateway.getBalance",
+          "layer": "infrastructure",
+          "dispatch": true,
+          "outbound": null
+        }
+      ],
+      "outbound": {
+        "repo": "mobile-banking-api",
+        "method": "java:com.bank.mobile.infra.FinacleGateway#getBalance",
+        "protocol": "SOAP",
+        "client": "Spring WS",
+        "operation": "marshalSendAndReceive",
+        "url": "https://finacle-uat.bank.internal/FIWebService/balance",
+        "host": "finacle-uat.bank.internal",
+        "system": "Finacle (CBS)",
+        "category": "internal-core",
+        "via": null,
+        "reason": "host",
+        "line": 17,
+        "confidence": "certain",
+        "target_repo": null,
+        "target_endpoint": null
+      },
+      "confidence": "likely"
+    },
+    {
+      "entry_repo": "mobile-banking-api",
+      "entry": "endpoint:POST /cards/{id}/block",
+      "hops": [
+        {
+          "repo": "mobile-banking-api",
+          "symbol": "java:com.bank.mobile.web.CardController#block",
+          "name": "CardController.block",
+          "layer": "web",
+          "dispatch": false,
+          "outbound": null
+        },
+        {
+          "repo": "mobile-banking-api",
+          "symbol": "java:com.bank.mobile.domain.CardService#block",
+          "name": "CardService.block",
+          "layer": "domain",
+          "dispatch": false,
+          "outbound": null
+        },
+        {
+          "repo": "mobile-banking-api",
+          "symbol": "java:com.bank.mobile.infra.CardAdapterClient#blockCard",
+          "name": "CardAdapterClient.blockCard",
+          "layer": "infrastructure",
+          "dispatch": false,
+          "outbound": {
+            "repo": "mobile-banking-api",
+            "method": "java:com.bank.mobile.infra.CardAdapterClient#blockCard",
+            "protocol": "HTTP",
+            "client": "Feign",
+            "operation": "POST /api/cards/{cardId}/block",
+            "url": "http://card-adapter.bank.internal:8080/api/cards/{cardId}/block",
+            "host": "card-adapter.bank.internal",
+            "system": "card-adapter",
+            "category": "internal-service",
+            "via": null,
+            "reason": "workspace repo",
+            "line": 10,
+            "confidence": "certain",
+            "target_repo": "card-adapter",
+            "target_endpoint": "endpoint:POST /api/cards/{cardId}/block"
+          }
+        },
+        {
+          "repo": "card-adapter",
+          "symbol": "java:com.bank.cards.web.CardBlockController#block",
+          "name": "CardBlockController.block",
+          "layer": "web",
+          "dispatch": false,
+          "outbound": null
+        },
+        {
+          "repo": "card-adapter",
+          "symbol": "java:com.bank.cards.domain.CardBlockService#block",
+          "name": "CardBlockService.block",
+          "layer": "domain",
+          "dispatch": false,
+          "outbound": null
+        },
+        {
+          "repo": "card-adapter",
+          "symbol": "java:com.bank.cards.infra.DcmsClient#blockCard",
+          "name": "DcmsClient.blockCard",
+          "layer": "infrastructure",
+          "dispatch": false,
+          "outbound": null
+        }
+      ],
+      "outbound": {
+        "repo": "card-adapter",
+        "method": "java:com.bank.cards.infra.DcmsClient#blockCard",
+        "protocol": "ISO 8583",
+        "client": "jPOS",
+        "operation": "MTI 0302",
+        "url": "tcp://dcms-switch.bank.internal:7002",
+        "host": "dcms-switch.bank.internal",
+        "system": "DCMS",
+        "category": "internal-core",
+        "via": null,
+        "reason": "host",
+        "line": 27,
+        "confidence": "certain",
+        "target_repo": null,
+        "target_endpoint": null
+      },
+      "confidence": "likely"
+    },
+    {
+      "entry_repo": "mobile-banking-api",
+      "entry": "endpoint:POST /cards/{id}/block",
+      "hops": [
+        {
+          "repo": "mobile-banking-api",
+          "symbol": "java:com.bank.mobile.web.CardController#block",
+          "name": "CardController.block",
+          "layer": "web",
+          "dispatch": false,
+          "outbound": null
+        },
+        {
+          "repo": "mobile-banking-api",
+          "symbol": "java:com.bank.mobile.domain.CardService#block",
+          "name": "CardService.block",
+          "layer": "domain",
+          "dispatch": false,
+          "outbound": null
+        },
+        {
+          "repo": "mobile-banking-api",
+          "symbol": "java:com.bank.mobile.infra.CardAdapterClient#blockCard",
+          "name": "CardAdapterClient.blockCard",
+          "layer": "infrastructure",
+          "dispatch": false,
+          "outbound": {
+            "repo": "mobile-banking-api",
+            "method": "java:com.bank.mobile.infra.CardAdapterClient#blockCard",
+            "protocol": "HTTP",
+            "client": "Feign",
+            "operation": "POST /api/cards/{cardId}/block",
+            "url": "http://card-adapter.bank.internal:8080/api/cards/{cardId}/block",
+            "host": "card-adapter.bank.internal",
+            "system": "card-adapter",
+            "category": "internal-service",
+            "via": null,
+            "reason": "workspace repo",
+            "line": 10,
+            "confidence": "certain",
+            "target_repo": "card-adapter",
+            "target_endpoint": "endpoint:POST /api/cards/{cardId}/block"
+          }
+        },
+        {
+          "repo": "card-adapter",
+          "symbol": "java:com.bank.cards.web.CardBlockController#block",
+          "name": "CardBlockController.block",
+          "layer": "web",
+          "dispatch": false,
+          "outbound": null
+        },
+        {
+          "repo": "card-adapter",
+          "symbol": "java:com.bank.cards.domain.CardBlockService#block",
+          "name": "CardBlockService.block",
+          "layer": "domain",
+          "dispatch": false,
+          "outbound": null
+        },
+        {
+          "repo": "card-adapter",
+          "symbol": "java:com.bank.cards.infra.FssHotlistClient#hotlist",
+          "name": "FssHotlistClient.hotlist",
+          "layer": "infrastructure",
+          "dispatch": false,
+          "outbound": null
+        }
+      ],
+      "outbound": {
+        "repo": "card-adapter",
+        "method": "java:com.bank.cards.infra.FssHotlistClient#hotlist",
+        "protocol": "HTTP",
+        "client": "RestTemplate",
+        "operation": "POST /api/v1/hotlist",
+        "url": "https://hotlist.fss.example/api/v1/hotlist",
+        "host": "hotlist.fss.example",
+        "system": "FSS",
+        "category": "third-party",
+        "via": null,
+        "reason": "host",
+        "line": 15,
+        "confidence": "certain",
+        "target_repo": null,
+        "target_endpoint": null
+      },
+      "confidence": "likely"
+    },
+    {
+      "entry_repo": "mobile-banking-api",
+      "entry": "endpoint:POST /kyc/aadhaar",
+      "hops": [
+        {
+          "repo": "mobile-banking-api",
+          "symbol": "java:com.bank.mobile.web.KycController#verify",
+          "name": "KycController.verify",
+          "layer": "web",
+          "dispatch": false,
+          "outbound": null
+        },
+        {
+          "repo": "mobile-banking-api",
+          "symbol": "java:com.bank.mobile.domain.KycService#verify",
+          "name": "KycService.verify",
+          "layer": "domain",
+          "dispatch": false,
+          "outbound": null
+        },
+        {
+          "repo": "mobile-banking-api",
+          "symbol": "java:com.bank.mobile.domain.AadhaarGateway#authenticate",
+          "name": "AadhaarGateway.authenticate",
+          "layer": "domain",
+          "dispatch": false,
+          "outbound": null
+        },
+        {
+          "repo": "mobile-banking-api",
+          "symbol": "java:com.bank.mobile.infra.UidaiAuthClient#authenticate",
+          "name": "UidaiAuthClient.authenticate",
+          "layer": "infrastructure",
+          "dispatch": true,
+          "outbound": null
+        }
+      ],
+      "outbound": {
+        "repo": "mobile-banking-api",
+        "method": "java:com.bank.mobile.infra.UidaiAuthClient#authenticate",
+        "protocol": "HTTP",
+        "client": "WebClient",
+        "operation": "POST /2.5/auth",
+        "url": "https://auth.uidai.example/2.5/auth",
+        "host": "auth.uidai.example",
+        "system": "UIDAI (Aadhaar)",
+        "category": "third-party",
+        "via": null,
+        "reason": "host",
+        "line": 19,
+        "confidence": "certain",
+        "target_repo": null,
+        "target_endpoint": null
+      },
+      "confidence": "likely"
+    },
+    {
+      "entry_repo": "payments-service",
+      "entry": "endpoint:KAFKA upi.callback",
+      "hops": [
+        {
+          "repo": "payments-service",
+          "symbol": "java:com.bank.payments.domain.UpiPaymentService#onCallback",
+          "name": "UpiPaymentService.onCallback",
+          "layer": "domain",
+          "dispatch": false,
+          "outbound": null
+        },
+        {
+          "repo": "payments-service",
+          "symbol": "java:com.bank.payments.domain.CoreBankingPort#credit",
+          "name": "CoreBankingPort.credit",
+          "layer": "domain",
+          "dispatch": false,
+          "outbound": null
+        },
+        {
+          "repo": "payments-service",
+          "symbol": "java:com.bank.payments.infra.EsbCoreBankingAdapter#credit",
+          "name": "EsbCoreBankingAdapter.credit",
+          "layer": "infrastructure",
+          "dispatch": true,
+          "outbound": null
+        }
+      ],
+      "outbound": {
+        "repo": "payments-service",
+        "method": "java:com.bank.payments.infra.EsbCoreBankingAdapter#credit",
+        "protocol": "HTTP",
+        "client": "RestTemplate",
+        "operation": "POST /gateway/FIN_CREDIT_TXN",
+        "url": "http://esb.bank.internal/gateway/FIN_CREDIT_TXN",
+        "host": "esb.bank.internal",
+        "system": "Finacle (CBS)",
+        "category": "internal-core",
+        "via": "ESB",
+        "reason": "marker",
+        "line": 26,
+        "confidence": "certain",
+        "target_repo": null,
+        "target_endpoint": null
+      },
+      "confidence": "likely"
+    },
+    {
+      "entry_repo": "payments-service",
+      "entry": "endpoint:POST /upi/pay",
+      "hops": [
+        {
+          "repo": "payments-service",
+          "symbol": "java:com.bank.payments.web.UpiController#pay",
+          "name": "UpiController.pay",
+          "layer": "web",
+          "dispatch": false,
+          "outbound": null
+        },
+        {
+          "repo": "payments-service",
+          "symbol": "java:com.bank.payments.domain.UpiPaymentService#pay",
+          "name": "UpiPaymentService.pay",
+          "layer": "domain",
+          "dispatch": false,
+          "outbound": null
+        },
+        {
+          "repo": "payments-service",
+          "symbol": "java:com.bank.payments.domain.CoreBankingPort#debit",
+          "name": "CoreBankingPort.debit",
+          "layer": "domain",
+          "dispatch": false,
+          "outbound": null
+        },
+        {
+          "repo": "payments-service",
+          "symbol": "java:com.bank.payments.infra.EsbCoreBankingAdapter#debit",
+          "name": "EsbCoreBankingAdapter.debit",
+          "layer": "infrastructure",
+          "dispatch": true,
+          "outbound": null
+        }
+      ],
+      "outbound": {
+        "repo": "payments-service",
+        "method": "java:com.bank.payments.infra.EsbCoreBankingAdapter#debit",
+        "protocol": "HTTP",
+        "client": "RestTemplate",
+        "operation": "POST /gateway/FIN_DEBIT_TXN",
+        "url": "http://esb.bank.internal/gateway/FIN_DEBIT_TXN",
+        "host": "esb.bank.internal",
+        "system": "Finacle (CBS)",
+        "category": "internal-core",
+        "via": "ESB",
+        "reason": "marker",
+        "line": 21,
+        "confidence": "certain",
+        "target_repo": null,
+        "target_endpoint": null
+      },
+      "confidence": "likely"
+    },
+    {
+      "entry_repo": "payments-service",
+      "entry": "endpoint:POST /upi/pay",
+      "hops": [
+        {
+          "repo": "payments-service",
+          "symbol": "java:com.bank.payments.web.UpiController#pay",
+          "name": "UpiController.pay",
+          "layer": "web",
+          "dispatch": false,
+          "outbound": null
+        },
+        {
+          "repo": "payments-service",
+          "symbol": "java:com.bank.payments.domain.UpiPaymentService#pay",
+          "name": "UpiPaymentService.pay",
+          "layer": "domain",
+          "dispatch": false,
+          "outbound": null
+        },
+        {
+          "repo": "payments-service",
+          "symbol": "java:com.bank.payments.infra.NpciUpiClient#sendReqPay",
+          "name": "NpciUpiClient.sendReqPay",
+          "layer": "infrastructure",
+          "dispatch": false,
+          "outbound": null
+        }
+      ],
+      "outbound": {
+        "repo": "payments-service",
+        "method": "java:com.bank.payments.infra.NpciUpiClient#sendReqPay",
+        "protocol": "HTTP",
+        "client": "RestTemplate",
+        "operation": "POST /upi/ReqPay/2.0",
+        "url": "https://upi-gw.npci.example/upi/ReqPay/2.0",
+        "host": "upi-gw.npci.example",
+        "system": "NPCI (UPI)",
+        "category": "third-party",
+        "via": null,
+        "reason": "host",
+        "line": 16,
+        "confidence": "certain",
+        "target_repo": null,
+        "target_endpoint": null
+      },
+      "confidence": "likely"
+    }
+  ],
+  "outbound": [
+    {
+      "repo": "card-adapter",
+      "method": "java:com.bank.cards.infra.DcmsClient#blockCard",
+      "protocol": "ISO 8583",
+      "client": "jPOS",
+      "operation": "MTI 0302",
+      "url": "tcp://dcms-switch.bank.internal:7002",
+      "host": "dcms-switch.bank.internal",
+      "system": "DCMS",
+      "category": "internal-core",
+      "via": null,
+      "reason": "host",
+      "line": 27,
+      "confidence": "certain",
+      "target_repo": null,
+      "target_endpoint": null
+    },
+    {
+      "repo": "card-adapter",
+      "method": "java:com.bank.cards.infra.FssHotlistClient#hotlist",
+      "protocol": "HTTP",
+      "client": "RestTemplate",
+      "operation": "POST /api/v1/hotlist",
+      "url": "https://hotlist.fss.example/api/v1/hotlist",
+      "host": "hotlist.fss.example",
+      "system": "FSS",
+      "category": "third-party",
+      "via": null,
+      "reason": "host",
+      "line": 15,
+      "confidence": "certain",
+      "target_repo": null,
+      "target_endpoint": null
+    },
+    {
+      "repo": "mobile-banking-api",
+      "method": "java:com.bank.mobile.infra.CardAdapterClient#blockCard",
+      "protocol": "HTTP",
+      "client": "Feign",
+      "operation": "POST /api/cards/{cardId}/block",
+      "url": "http://card-adapter.bank.internal:8080/api/cards/{cardId}/block",
+      "host": "card-adapter.bank.internal",
+      "system": "card-adapter",
+      "category": "internal-service",
+      "via": null,
+      "reason": "workspace repo",
+      "line": 10,
+      "confidence": "certain",
+      "target_repo": "card-adapter",
+      "target_endpoint": "endpoint:POST /api/cards/{cardId}/block"
+    },
+    {
+      "repo": "mobile-banking-api",
+      "method": "java:com.bank.mobile.infra.FinacleGateway#getBalance",
+      "protocol": "SOAP",
+      "client": "Spring WS",
+      "operation": "marshalSendAndReceive",
+      "url": "https://finacle-uat.bank.internal/FIWebService/balance",
+      "host": "finacle-uat.bank.internal",
+      "system": "Finacle (CBS)",
+      "category": "internal-core",
+      "via": null,
+      "reason": "host",
+      "line": 17,
+      "confidence": "certain",
+      "target_repo": null,
+      "target_endpoint": null
+    },
+    {
+      "repo": "mobile-banking-api",
+      "method": "java:com.bank.mobile.infra.UidaiAuthClient#authenticate",
+      "protocol": "HTTP",
+      "client": "WebClient",
+      "operation": "POST /2.5/auth",
+      "url": "https://auth.uidai.example/2.5/auth",
+      "host": "auth.uidai.example",
+      "system": "UIDAI (Aadhaar)",
+      "category": "third-party",
+      "via": null,
+      "reason": "host",
+      "line": 19,
+      "confidence": "certain",
+      "target_repo": null,
+      "target_endpoint": null
+    },
+    {
+      "repo": "payments-service",
+      "method": "java:com.bank.payments.infra.EsbCoreBankingAdapter#debit",
+      "protocol": "HTTP",
+      "client": "RestTemplate",
+      "operation": "POST /gateway/FIN_DEBIT_TXN",
+      "url": "http://esb.bank.internal/gateway/FIN_DEBIT_TXN",
+      "host": "esb.bank.internal",
+      "system": "Finacle (CBS)",
+      "category": "internal-core",
+      "via": "ESB",
+      "reason": "marker",
+      "line": 21,
+      "confidence": "certain",
+      "target_repo": null,
+      "target_endpoint": null
+    },
+    {
+      "repo": "payments-service",
+      "method": "java:com.bank.payments.infra.EsbCoreBankingAdapter#credit",
+      "protocol": "HTTP",
+      "client": "RestTemplate",
+      "operation": "POST /gateway/FIN_CREDIT_TXN",
+      "url": "http://esb.bank.internal/gateway/FIN_CREDIT_TXN",
+      "host": "esb.bank.internal",
+      "system": "Finacle (CBS)",
+      "category": "internal-core",
+      "via": "ESB",
+      "reason": "marker",
+      "line": 26,
+      "confidence": "certain",
+      "target_repo": null,
+      "target_endpoint": null
+    },
+    {
+      "repo": "payments-service",
+      "method": "java:com.bank.payments.infra.NpciUpiClient#sendReqPay",
+      "protocol": "HTTP",
+      "client": "RestTemplate",
+      "operation": "POST /upi/ReqPay/2.0",
+      "url": "https://upi-gw.npci.example/upi/ReqPay/2.0",
+      "host": "upi-gw.npci.example",
+      "system": "NPCI (UPI)",
+      "category": "third-party",
+      "via": null,
+      "reason": "host",
+      "line": 16,
+      "confidence": "certain",
+      "target_repo": null,
+      "target_endpoint": null
+    }
+  ]
+}

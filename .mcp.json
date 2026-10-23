@@ -2,10 +2,10 @@
   "mcpServers": {
     "codelens": {
       "type": "stdio",
-      "command": "/Users/ravindra/repeat/codelens/.venv/bin/codelens",
+      "command": "/Users/ravi/work/IndusInd/poc/codelens/.venv/bin/codelens",
       "args": [
         "mcp",
-        "/Users/ravindra/repeat/codelens/examples/bank-poc"
+        "/Users/ravi/work/IndusInd/poc/codelens/examples/bank-poc"
       ],
       "env": {}
     }

@@ -14,8 +14,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8"]
+dev = ["pytest>=8", "kuzu==0.11.3"]
 mcp = ["mcp>=2.3,<3"]
+store = ["kuzu==0.11.3"]
 
 [project.scripts]
 codelens = "codelens.cli:main"

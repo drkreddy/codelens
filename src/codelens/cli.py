@@ -30,15 +30,31 @@ def main(argv: list[str] | None = None) -> int:
     m.add_argument("root", type=Path, help="a repo, or a folder whose subfolders are repos")
     m.add_argument("-s", "--systems", type=Path, default=None,
                    help="system catalog (TOML); defaults to ROOT/systems.toml if present")
+    m.add_argument("--db", type=Path, default=None,
+                   help="graph store; defaults to ROOT/.codelens/graph.kuzu")
+    m.add_argument("--reindex", action="store_true", help="re-parse even if the store is fresh")
+    i = sub.add_parser("index", help="parse a folder of repos and save the graph store")
+    i.add_argument("root", type=Path, help="a repo, or a folder whose subfolders are repos")
+    i.add_argument("-s", "--systems", type=Path, default=None,
+                   help="system catalog (TOML); defaults to ROOT/systems.toml if present")
+    i.add_argument("--db", type=Path, default=None,
+                   help="graph store; defaults to ROOT/.codelens/graph.kuzu")
+    q = sub.add_parser("query", help="run read-only Cypher against a graph store")
+    q.add_argument("db", type=Path, help="store written by `codelens index`")
+    q.add_argument("cypher", help='e.g. "MATCH (s:Symbol {kind: \'endpoint\'}) RETURN s.id"')
     args = parser.parse_args(argv)
 
+    if args.command == "query":
+        return run_query(args)
     if not args.root.is_dir():
         parser.error(f"not a directory: {args.root}")
+    if args.command == "index":
+        return run_index(args)
     if args.command == "journeys":
         return run_journeys(args)
     if args.command == "mcp":
         from codelens.mcp_server import build_server
-        build_server(args.root, args.systems).run("stdio")  # stdout belongs to the protocol
+        build_server(args.root, args.systems, args.db, args.reindex).run("stdio")  # stdout belongs to the protocol
         return 0
     formats = [f.strip() for f in args.format.split(",") if f.strip()]
     unknown = [f for f in formats if f not in RENDERERS]
@@ -55,6 +71,37 @@ def main(argv: list[str] | None = None) -> int:
     s = graph.summary()
     print(f"{s.get('files_analyzed', 0)} files, {sum(s['nodes'].values())} nodes, "
           f"{len(graph.edges)} edges, {len(graph.errors)} errors", file=sys.stderr)
+    return 0
+
+
+def run_index(args) -> int:
+    from codelens.journeys import Workspace
+    from codelens.store import DEFAULT_DB, save
+    from codelens.systems import Catalog
+
+    systems = args.systems or (args.root / "systems.toml")
+    ws = Workspace(args.root, Catalog.load(systems if systems.is_file() else None))
+    db = args.db or (args.root / DEFAULT_DB)
+    save(ws, db)
+    symbols = sum(len(r.graph.symbols) for r in ws.repos.values())
+    print(f"wrote {db}")
+    print(f"{len(ws.repos)} repos, {symbols} symbols", file=sys.stderr)
+    return 0
+
+
+def run_query(args) -> int:
+    import json
+    from codelens.store import query
+
+    if not args.db.is_file():
+        print(f"codelens: no store at {args.db} (run `codelens index` first)", file=sys.stderr)
+        return 2
+    try:
+        rows = query(args.db, args.cypher)
+    except RuntimeError as exc:
+        print(f"codelens: {exc}", file=sys.stderr)
+        return 1
+    print(json.dumps(rows, indent=2, default=str))
     return 0
 
 

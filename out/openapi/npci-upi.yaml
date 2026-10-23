@@ -1,0 +1,44 @@
+openapi: 3.1.0
+info:
+  title: NPCI (UPI)
+  version: 0.0.0
+  description: >-
+    Category: third-party. This spec describes the calls the bank makes to this system,
+    reconstructed by static analysis. It is not a spec published by the system owner.
+servers:
+  - url: https://upi-gw.npci.example
+paths:
+  /upi/ReqPay/2.0:
+    post:
+      operationId: postUpiReqPay20
+      summary: NpciUpiClient.sendReqPay
+      description: >-
+        Client RestTemplate. Base URL comes from the property npci.upi.url, and /ReqPay/2.0 is a literal.
+        Content type is not set in code and is inferred from the XML literal. Only the Payee addr attribute
+        is built by the code. amountPaise is a method parameter but is not used in the body.
+      requestBody:
+        content:
+          application/xml:
+            schema:
+              type: string
+              description: 'XML string built inline: upi:ReqPay with child Payee, attribute addr taken from payeeVpa (string)'
+              xml:
+                name: ReqPay
+                prefix: upi
+                namespace: http://npci.org/upi/schema/
+      responses:
+        default:
+          description: Raw response body returned as String. Structure not shown in code.
+          content:
+            application/xml:
+              schema:
+                type: string
+      x-codelens:
+        repo: payments-service
+        at: payments-service/src/main/java/com/bank/payments/infra/NpciUpiClient.java:16
+        confidence: possible
+        via: null
+        callers:
+          - repo: payments-service
+            method: NpciUpiClient.sendReqPay
+            at: payments-service/src/main/java/com/bank/payments/infra/NpciUpiClient.java:16

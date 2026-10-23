@@ -1,0 +1,41 @@
+openapi: 3.1.0
+info:
+  title: card-adapter
+  version: 0.0.0
+  description: >-
+    Category: internal-service. This spec describes the calls the bank makes to this system,
+    reconstructed by static analysis. It is not a spec published by the system owner.
+servers:
+  - url: http://card-adapter.bank.internal:8080
+paths:
+  /api/cards/{cardId}/block:
+    post:
+      operationId: postApiCardsCardIdBlock
+      summary: CardAdapterClient.blockCard
+      description: >-
+        Client Feign. Base URL comes from the property services.card-adapter.url.
+        The server side matches CardBlockController.block. The reason query parameter has
+        no required=false or default, so Spring treats it as required.
+      parameters:
+        - name: cardId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: reason
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        default:
+          description: Return type is void. No response body or status handling is visible.
+      x-codelens:
+        repo: mobile-banking-api
+        at: mobile-banking-api/src/main/java/com/bank/mobile/infra/CardAdapterClient.java:10
+        confidence: certain
+        via: null
+        callers:
+          - repo: mobile-banking-api
+            method: CardAdapterClient.blockCard
+            at: mobile-banking-api/src/main/java/com/bank/mobile/infra/CardAdapterClient.java:10

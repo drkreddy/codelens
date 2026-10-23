@@ -14,9 +14,19 @@ from typing import Any
 from mcp.server.mcpserver import MCPServer
 from mcp.types import ToolAnnotations
 
-from codelens.journeys import Workspace
 from codelens.query import QueryEngine
+from codelens.store import DEFAULT_DB, describe, open_workspace, query_limited
 from codelens.systems import Catalog
+
+MAX_ROWS = 1000
+QUERY_TIMEOUT_MS = 10_000
+GRAPH_EXAMPLES = [
+    "MATCH (s:Symbol {kind: 'endpoint'}) RETURN s.repo, s.id LIMIT 20",
+    "MATCH (m:Symbol)-[:HAS_OUTBOUND]->(o:Outbound) RETURN o.system, o.category, count(*) AS calls"
+    " ORDER BY calls DESC",
+    "MATCH (a:Symbol)-[e:Edge {kind: 'calls'}]->(b:Symbol {id: 'java:com.acme.Foo#bar'})"
+    " RETURN a.id, e.confidence, e.file, e.line",
+]
 
 INSTRUCTIONS = """\
 codelens answers questions about a workspace of source repos: which internal core
@@ -33,16 +43,20 @@ How to answer well:
   not class or method names.
 - Symbols are named Class.method (e.g. CardService.block). An ambiguous name
   returns the candidates; ask again with one of them.
+- For questions no tool covers (counts, custom filters), call `graph_schema`, then
+  `graph_query` with read-only Cypher.
 """
 
 READ_ONLY = ToolAnnotations(readOnlyHint=True, destructiveHint=False, idempotentHint=True,
                             openWorldHint=False)
 
 
-def build_server(root: Path, systems: Path | None = None) -> MCPServer:
+def build_server(root: Path, systems: Path | None = None, db: Path | None = None,
+                 reindex: bool = False) -> MCPServer:
+    """Serve a workspace, loading it from the graph store when that is up to date."""
     catalog_path = systems or (root / "systems.toml")
     catalog = Catalog.load(catalog_path if catalog_path.is_file() else None)
-    engine = QueryEngine(Workspace(root, catalog))
+    engine = QueryEngine(open_workspace(root, catalog, db, reindex))
     server = MCPServer(name="codelens", instructions=INSTRUCTIONS)
 
     @server.tool(annotations=READ_ONLY)
@@ -100,5 +114,35 @@ def build_server(root: Path, systems: Path | None = None) -> MCPServer:
                     limit: int = 40) -> dict[str, Any]:
         """Search code and config for text (case-insensitive), with the enclosing method and layer of each hit."""
         return engine.search_code(text, repo, regex, limit)
+
+    db_path = db or (root / DEFAULT_DB)
+
+    def need_store() -> dict[str, Any] | None:
+        if not db_path.is_file():
+            return {"error": f"no graph store at {db_path} (it could not be written; "
+                             "run `codelens index` or start the server with a writable --db)"}
+        return None
+
+    @server.tool(annotations=READ_ONLY)
+    def graph_schema() -> dict[str, Any]:
+        """Tables and columns of the graph database, plus example Cypher. Read this before `graph_query`."""
+        if (err := need_store()):
+            return err
+        return {**describe(db_path), "examples": GRAPH_EXAMPLES}
+
+    @server.tool(annotations=READ_ONLY)
+    def graph_query(cypher: str, limit: int = 100) -> dict[str, Any]:
+        """Run read-only Cypher (Kuzu dialect) on the graph database and return the rows.
+
+        Use it for questions the other tools do not cover, e.g. counts, paths and
+        custom filters. Writes fail. Rows are capped by `limit` (max 1000) and
+        `truncated` says if more existed. Call `graph_schema` first for the tables.
+        """
+        if (err := need_store()):
+            return err
+        try:
+            return query_limited(db_path, cypher, max(1, min(limit, MAX_ROWS)), QUERY_TIMEOUT_MS)
+        except Exception as exc:  # bad Cypher, write attempt, timeout: let the model fix it
+            return {"error": str(exc)}
 
     return server

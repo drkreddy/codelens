@@ -1,0 +1,35 @@
+openapi: 3.1.0
+info:
+  title: FSS
+  version: 0.0.0
+  description: >-
+    Category: third-party. This spec describes the calls the bank makes to this system,
+    reconstructed by static analysis. It is not a spec published by the system owner.
+servers:
+  - url: https://hotlist.fss.example
+paths:
+  /api/v1/hotlist:
+    post:
+      operationId: postApiV1Hotlist
+      summary: FssHotlistClient.hotlist
+      description: >-
+        Client RestTemplate. The base path comes from the property fss.base-url plus the literal /hotlist.
+        Request content type is not set in code and is inferred. No auth header is sent at the call site.
+      requestBody:
+        content:
+          text/plain:
+            schema:
+              type: string
+              description: cardId passed as the raw body
+      responses:
+        default:
+          description: Response body discarded (Void.class). No status handling is visible at the call site.
+      x-codelens:
+        repo: card-adapter
+        at: card-adapter/src/main/java/com/bank/cards/infra/FssHotlistClient.java:15
+        confidence: possible
+        via: null
+        callers:
+          - repo: card-adapter
+            method: FssHotlistClient.hotlist
+            at: card-adapter/src/main/java/com/bank/cards/infra/FssHotlistClient.java:15
